@@ -1,5 +1,5 @@
 # conda activate preprocess_drone_video
-# python 0_preprocess_videos_fimix8tele.py --input-folder /media/biesseck/SSD_500GB/Datasets/drone_FIMIX8Tele/videos/100DRONE_2024-09-22_height=9m --delete-ext .LRV,.THM --valid-ext .MP4
+# python 0_preprocess_videos_fimix8tele.py --input-folder /media/biesseck/SSD_500GB/Datasets/drone_FIMIX8Tele/videos/100DRONE_2024-09-22_height=9m --delete-ext LRV,THM --valid-ext MP4
 
 import os, sys
 import argparse
@@ -14,10 +14,10 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Preprocess videos by extracting frames, resizing, and optionally deleting the original videos.")
     parser.add_argument('--input-folder', type=str, required=True, help="Folder containing video files to preprocess")
 
-    parser.add_argument('--delete-ext', type=list_of_strings, default='.LRV,.THM', help=".LRV,.THM")
-    parser.add_argument('--valid-ext', type=list_of_strings, default='.MP4', help=".MP4,.AVI")
+    parser.add_argument('--delete-ext', type=list_of_strings, default='LRV,THM', help="LRV,THM")
+    parser.add_argument('--valid-ext', type=list_of_strings, default='MP4', help="MP4,AVI")
 
-    parser.add_argument('--suffix-name', type=str, default='', help="Suffix to be added in file name. Ex: _height=9m")
+    parser.add_argument('--suffix', type=str, default='', help="Suffix to be added in file name. Ex: _height=9m")
     parser.add_argument('-f', '--force', action='store_true', help="Force renaming files, even if they are already formatted")
     
     args = parser.parse_args()
@@ -52,7 +52,7 @@ def filename_is_already_formatted(pathfile, suffix=''):
 
 def main():
     args = parse_args()
-    args.suffix_name = args.suffix_name.strip('_')
+    args.suffix = args.suffix.strip('_')
     # print('args.valid_ext:', args.valid_ext, 'type:', type(args.valid_ext), 'tuple:', tuple(args.valid_ext))
     # print('args.delete_ext:', args.delete_ext, 'type:', type(args.delete_ext), 'tuple:', tuple(args.delete_ext))
     # sys.exit(0)
@@ -75,7 +75,7 @@ def main():
     # Rename video files
     pathfiles_valid = find_files_with_extensions(args.input_folder, args.valid_ext)
     pathfiles_valid_to_rename = [filename for filename in pathfiles_valid
-                                 if (not filename_is_already_formatted(filename, args.suffix_name) or args.force)]
+                                 if (not filename_is_already_formatted(filename, args.suffix) or args.force)]
     if len(pathfiles_valid_to_rename) > 0:
         for idx_pathfile_valid_rename, pathfile_valid_rename in enumerate(pathfiles_valid_to_rename):
             stat_orig_video = os.stat(pathfile_valid_rename)
@@ -88,7 +88,7 @@ def main():
             pathfile_valid_rename_newname = pathfile_valid_rename_name.split('_')[0] \
                                                       + '_' + mdate_str \
                                                       + '_' + mtime_str \
-                                                      + ('_' + args.suffix_name if args.suffix_name != '' else '') \
+                                                      + ('_' + args.suffix if args.suffix != '' else '') \
                                                       + pathfile_valid_rename_extension
             pathfile_valid_rename_newpath = os.path.join(pathfile_valid_rename_path, pathfile_valid_rename_newname)
             print(f'              └─> {pathfile_valid_rename_newname}')
