@@ -116,6 +116,10 @@ def extract_all_frames_from_video(video_path='', frames_path='', frame_exts=['pn
     print(f"Extracted {idx_frame} frames from {video_name}.")
 
 
+def manually_extract_frames_from_video(video_path='', frames_path='', frame_exts=['png','jpg'], frame_quality=95):
+    pass
+
+
 
 def main():
     args = parse_args()
@@ -139,7 +143,8 @@ def main():
             os.makedirs(frame_video_folder, exist_ok=True)
 
             if args.manual:
-                pass   # show frames in screen for manual selection before saving them
+                # show frames in screen for manual selection before saving them
+                manually_extract_frames_from_video(path_video, frame_video_folder, args.frame_ext, args.frame_quality)
             else:
                 extract_all_frames_from_video(path_video, frame_video_folder, args.frame_ext, args.frame_quality)
     else:
