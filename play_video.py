@@ -1,5 +1,5 @@
 # conda activate preprocess_drone_video
-# python 1_extract_frames_videos_fimix8tele.py --input-folder /media/biesseck/SSD_500GB/Datasets/drone_FIMIX8Tele/videos/100DRONE_2024-09-22_height=9m --frame-folder /media/biesseck/SSD_500GB/Datasets/drone_FIMIX8Tele/frames --valid-ext .MP4 --frame-ext png,jpg --frame-quality 90,95
+# python play_video.py /media/biesseck/SSD_500GB/Datasets/drone_FIMIX8Tele/videos/100DRONE_2024-09-22_height=9m/FIMI0001_2024-09-22_15-30-25_height=9m.MP4
 
 import os, sys
 import cv2
@@ -140,9 +140,9 @@ def play_video_frame_idx(video_path=''):
 
 def main():
     args = parse_args()
-    
+
     if not os.path.exists(args.filepath):
-        raise Exception('No such file or directory:', args.filepath)
+        raise Exception(f'No such file or directory: {args.filepath}')
         
     play_video_sequential(args.filepath)
     # play_video_frame_idx(args.filepath)

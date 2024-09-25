@@ -126,7 +126,7 @@ def main():
     
     # Check directories
     if not os.path.exists(args.input_folder):
-        raise Exception('No such file or directory:', args.input_folder)
+        raise Exception(f'No such file or directory: {args.input_folder}')
     if args.frame_folder.split('/')[-1] != args.input_folder.split('/')[-1]:
         args.frame_folder = os.path.join(args.frame_folder, args.input_folder.split('/')[-1])
     os.makedirs(args.frame_folder, exist_ok=True)
