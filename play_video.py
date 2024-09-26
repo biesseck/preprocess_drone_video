@@ -66,7 +66,7 @@ def start_monitoring_cv2_window(window_name=''):
         while True:
             if cv2.getWindowProperty(window_name, 0) >= 0:
                 if not cv2.getWindowProperty(window_name, cv2.WND_PROP_VISIBLE):   # windows is open
-                    print('\nExit')
+                    print("\nWindow closed")
                     os._exit(0)
             time.sleep(0.5)
 
@@ -74,78 +74,84 @@ def start_monitoring_cv2_window(window_name=''):
     thread.start()
 
 
-def play_video_sequential(video_path=''):
+def play_video_frame_idx(video_path=''):
     print(f'Opening video: \'{video_path}\'')
     total_frames, width, height, fps = count_num_frames_video(video_path, verbose=True)
     delay_frame = int(1000.0/fps)
-
     cap = cv2.VideoCapture(video_path)
-    frame_count = 0
-    should_pause = False
 
+    print(f'    ESC/q: quit    SPACEBAR: pause/play    ←/a: previous frame    →/d: next frame')
     window_name = os.path.basename(video_path)
     cv2.namedWindow(window_name, cv2.WINDOW_KEEPRATIO)
+    cv2.resizeWindow(window_name, 1024, 680)
     start_monitoring_cv2_window(window_name)
 
+    if not cap.isOpened():
+        Exception(f"Error: Unable to open video file: {video_path}")
+        return
+
+    playing = True
+    frame_idx = 0
+    key = -1
+
     while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break
-
         if cv2.getWindowProperty(window_name, cv2.WND_PROP_VISIBLE) >= 1:   # windows is open
-            cv2.imshow(window_name, frame)
-            key = cv2.waitKey(delay_frame)
-            print(f'    {window_name} - frame {frame_count}/{total_frames} - key: {key}    ', end='\r')
+            print(f'    {window_name} - frame {frame_idx}/{total_frames} - key: {key}    ', end='\r')
+            if playing:
+                ret, frame = cap.read()
+                if not ret:
+                    print("End of video reached or error reading video")
+                    break
+                
+                cv2.imshow(window_name, frame)
+                key = cv2.waitKey(delay_frame)
+            else:
+                key = cv2.waitKey(0)
 
-            if key == 32 or should_pause == True:     # spacebar
-                should_pause = True
-                if should_pause:
-                    while True:
-                        key = cv2.waitKey(0)
-                        if key == 32:     # spacebar
-                            should_pause = False
-                            break
-                        if key == 115:    # 's' or 'S' (save frame)
-                            pass
-                        if key == 27:     # ESC
-                            break
-                        if key == 83:     # RIGHT
-                            break
-
-            if key == 13:     # ENTER
-                pass
-
-            if key == 115:    # 's' or 'S' (save frame)
-                pass
-
-            if key == 27:     # ESC
-                print('\nExit')
+            if key == 27 or key == ord('q'):  # ESC or 'q' key to exit
+                print("\nExiting video player")
                 os._exit(0)
-                # break
+            
+            if key == ord(' '):  # Space key to pause/play
+                playing = not playing
+            
+            if key == 81 or key == ord('a'):  # Left arrow key to move backward one frame
+                playing = False
+                frame_idx = max(0, frame_idx-1)
+                cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+                ret, frame = cap.read()
+                if ret:
+                    cv2.imshow(window_name, frame)
+
+            if key == 83 or key == ord('d'):  # Right arrow key to move forward one frame
+                playing = False
+                frame_idx = min(total_frames-1, frame_idx+1)
+                cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+                ret, frame = cap.read()
+                if ret:
+                    cv2.imshow(window_name, frame)
+
+            if playing:
+                frame_idx += 1
 
         else:
-            print('\nExit')
+            print("\nWindow closed")
             os._exit(0)
-            # break
 
-        frame_count += 1
-    print('')
-    cv2.destroyAllWindows()
     os._exit(0)
+    cap.release()
+    cv2.destroyAllWindows()
 
 
-def play_video_frame_idx(video_path=''):
-    pass
-
+    
 
 def main():
     args = parse_args()
 
     if not os.path.exists(args.filepath):
         raise Exception(f'No such file or directory: {args.filepath}')
-        
-    play_video_sequential(args.filepath)
-    # play_video_frame_idx(args.filepath)
+
+    play_video_frame_idx(args.filepath)
 
     
 
